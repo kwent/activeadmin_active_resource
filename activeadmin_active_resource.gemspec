@@ -15,6 +15,6 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0")
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'activeadmin', '>= 2.0'
+  spec.add_runtime_dependency 'activeadmin', '>= 2.0.0.alpha'
   spec.add_runtime_dependency 'activeresource', '~> 5.0'
 end
