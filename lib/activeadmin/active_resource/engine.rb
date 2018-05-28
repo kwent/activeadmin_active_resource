@@ -50,6 +50,14 @@ end
       instantiate_collection( (format.decode( @connection_response.body ) || []), query_options, prefix_options )
     end
 
+    def count
+      path = collection_path('count.json')
+      print path
+      @connection_response = connection.get(path, headers)
+      print @connection_response
+      format.decode( @connection_response.body ).count
+    end
+
     # -> http://api.rubyonrails.org/classes/ActiveRecord/FinderMethods.html#method-i-find_by
     def find_by( arg, *args )
       arg && arg['id'] ? self.find( arg['id'] ) : self.find( :first, arg )
@@ -95,8 +103,8 @@ end
     def results
       results = find_all params: {page: @page, per_page: @page_count, order: @order, q: @ransack_params}
       results.current_page = @page
-      results.limit_value = @connection_response['pagination-limit'].to_i
-      results.total_count = @connection_response['pagination-totalcount'].to_i
+      results.limit_value = @page_count
+      results.total_count = count
       results.total_pages = ( results.total_count.to_f / results.limit_value ).ceil
       results
     end
