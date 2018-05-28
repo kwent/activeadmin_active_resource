@@ -50,8 +50,8 @@ end
       instantiate_collection( (format.decode( @connection_response.body ) || []), query_options, prefix_options )
     end
 
-    def count
-      path = collection_path('count.json')
+    def count( options = {} )
+      path = collection_path('count.json', options)
       print path
       @connection_response = connection.get(path, headers)
       print @connection_response
@@ -86,6 +86,13 @@ end
 
     def ransack( params = {}, options = {} )
       @ransack_params = params.blank? ? {} : params.permit!.to_h
+      @fields_query = params.blank? ? {} : params.permit!.to_h
+      @ransack_params.keys.each do |key|
+        if key.ends_with?("_cont")
+          @fields_query[key.gsub('_cont', '')] = @ransack_params[key]
+          @ransack_params.delete(key)
+        end
+      end
       OpenStruct.new( conditions: {}, object: OpenStruct.new( klass: self ), result: self )
     end
 
@@ -101,10 +108,12 @@ end
     end
 
     def results
-      results = find_all params: {page: @page, per_page: @page_count, order: @order, q: @ransack_params}
+      params = {page: @page, per_page: @page_count, order: @order}
+      params = params.merge @fields_query
+      results = find_all params: params
       results.current_page = @page
       results.limit_value = @page_count
-      results.total_count = count
+      results.total_count = count(@fields_query)
       results.total_pages = ( results.total_count.to_f / results.limit_value ).ceil
       results
     end
